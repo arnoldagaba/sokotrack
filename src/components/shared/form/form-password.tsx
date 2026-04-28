@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useFieldContext } from "#/hooks/form-context.ts";
-import { Field, FieldLabel } from "../../ui/field.tsx";
+import { Field, FieldError, FieldLabel } from "../../ui/field.tsx";
 import PasswordInput from "../password-input.tsx";
 
 interface FormPasswordProps {
@@ -34,6 +34,7 @@ const FormPassword = ({
 
             <PasswordInput
                 aria-invalid={isInvalid}
+                autoComplete="current-password webauthn"
                 id={field.name}
                 name={field.name}
                 onBlur={field.handleBlur}
@@ -41,6 +42,8 @@ const FormPassword = ({
                 placeholder={placeholder}
                 value={field.state.value}
             />
+
+            {isInvalid && <FieldError errors={field.state.meta.errors} />}
         </Field>
     );
 };
