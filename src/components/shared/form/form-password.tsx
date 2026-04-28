@@ -1,8 +1,10 @@
+import { Link } from "@tanstack/react-router";
 import { useFieldContext } from "#/hooks/form-context.ts";
 import { Field, FieldLabel } from "../../ui/field.tsx";
 import PasswordInput from "../password-input.tsx";
 
 interface FormPasswordProps {
+    isLogin: boolean;
     label?: string;
     placeholder?: string;
 }
@@ -10,6 +12,7 @@ interface FormPasswordProps {
 const FormPassword = ({
     label = "Password",
     placeholder = "Enter your password",
+    isLogin = false,
 }: FormPasswordProps) => {
     const field = useFieldContext<string>();
 
@@ -17,7 +20,17 @@ const FormPassword = ({
 
     return (
         <Field data-invalid={isInvalid}>
-            <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+            <div className="flex items-center justify-between">
+                <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+                {isLogin && (
+                    <Link
+                        className="hover:text-muted-foreground hover:underline"
+                        to="/forgot-password"
+                    >
+                        Forgot password?
+                    </Link>
+                )}
+            </div>
 
             <PasswordInput
                 aria-invalid={isInvalid}
