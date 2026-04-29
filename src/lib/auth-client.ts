@@ -5,10 +5,11 @@ import {
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import type { auth } from "./auth.ts";
+import { ac, roles } from "./permissions.ts";
 
 export const authClient = createAuthClient({
     plugins: [
-        adminClient(),
+        adminClient({ ac, roles }),
         lastLoginMethodClient(),
         inferAdditionalFields<typeof auth>(),
     ],
