@@ -96,7 +96,7 @@ const RegisterForm = () => {
                                 <field.FormInput
                                     label="Full name"
                                     placeholder="Enter your full name"
-                                    type="name"
+                                    type="text"
                                 />
                             )}
                         </form.AppField>
