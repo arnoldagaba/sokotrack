@@ -1,6 +1,9 @@
 import { revalidateLogic } from "@tanstack/react-form";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import toast from "react-hot-toast";
+import GoogleLogo from "#/components/shared/google-logo.tsx";
+import { Badge } from "#/components/ui/badge.tsx";
+import { Button } from "#/components/ui/button.tsx";
 import {
     Card,
     CardContent,
@@ -8,17 +11,19 @@ import {
     CardHeader,
     CardTitle,
 } from "#/components/ui/card.tsx";
-import { Field, FieldDescription, FieldGroup } from "#/components/ui/field.tsx";
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldSeparator,
+} from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form.ts";
 import { authClient } from "#/lib/auth-client.ts";
 import { type LoginInput, loginSchema } from "../schema/index.ts";
-import { Button } from "#/components/ui/button.tsx";
-import GoogleLogo from "#/components/shared/google-logo.tsx";
-import { Badge } from "#/components/ui/badge.tsx";
 
 const LoginForm = () => {
     const navigate = useNavigate();
-    const search = useSearch({from: "/_auth/login"})
+    const search = useSearch({ from: "/_auth/login" });
 
     const defaultValues: LoginInput = {
         email: "",
@@ -65,11 +70,13 @@ const LoginForm = () => {
             ).toString(),
             fetchOptions: {
                 onError: ({ error }) => {
-                    toast.error(error.message || "Failed to login. Please try again.");
-                }
-            }
+                    toast.error(
+                        error.message || "Failed to login. Please try again."
+                    );
+                },
+            },
         });
-    }
+    };
 
     const lastMethod = authClient.getLastUsedLoginMethod();
 
@@ -108,6 +115,8 @@ const LoginForm = () => {
                                 )}
                             </Button>
                         </Field>
+
+                        <FieldSeparator>or continue with email</FieldSeparator>
 
                         <form.AppField name="email">
                             {(field) => (
