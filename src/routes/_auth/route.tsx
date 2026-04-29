@@ -3,8 +3,8 @@ import { getSession } from "#/features/auth/functions";
 
 export const Route = createFileRoute("/_auth")({
     beforeLoad: async () => {
-        const { session } = await getSession();
-        if (session) {
+        const result = await getSession().catch(() => null);
+        if (result?.session) {
             throw redirect({ to: "/dashboard" });
         }
     },
