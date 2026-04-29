@@ -1,10 +1,11 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
-import { admin } from "better-auth/plugins/admin";
+import { admin as adminPlugin } from "better-auth/plugins/admin";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { serverEnv } from "#/env/server.ts";
 import { prisma } from "#/lib/db.ts";
+import { ac, roles } from "./permissions.ts";
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -12,6 +13,7 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
+        disableSignUp: true,
     },
     socialProviders: {
         google: {
@@ -21,7 +23,12 @@ export const auth = betterAuth({
         },
     },
     plugins: [
-        admin(),
+        adminPlugin({
+            ac,
+            adminRoles: ["admin"],
+            roles,
+            defaultRole: "staff",
+        }),
         lastLoginMethod(),
         haveIBeenPwned(),
         tanstackStartCookies(),
