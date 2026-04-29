@@ -34,7 +34,9 @@ const FormPassword = ({
 
             <PasswordInput
                 aria-invalid={isInvalid}
-                autoComplete="current-password webauthn"
+                autoComplete={
+                    isLogin ? "current-password webauthn" : "new-password"
+                }
                 id={field.name}
                 name={field.name}
                 onBlur={field.handleBlur}
