@@ -6,7 +6,7 @@ import { Input } from "../../ui/input.tsx";
 type FormInputProps = ComponentProps<"input"> & {
     label: string;
     placeholder: string;
-    type: "email" | "name";
+    type: "email" | "text";
 };
 
 const FormInput = ({ label, placeholder, type, ...props }: FormInputProps) => {
@@ -26,7 +26,7 @@ const FormInput = ({ label, placeholder, type, ...props }: FormInputProps) => {
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 placeholder={placeholder}
-                type={type === "name" ? "text" : type}
+                type={type}
                 value={field.state.value}
                 {...props}
             />

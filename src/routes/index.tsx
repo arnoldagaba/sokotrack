@@ -1,6 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { getSession } from "#/features/auth/functions/index.ts";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+    beforeLoad: async () => {
+        const { session } = await getSession();
+        if (session) {
+            throw redirect({ to: "/dashboard" });
+        }
+    },
+    component: Home,
+});
 
 function Home() {
     return (
