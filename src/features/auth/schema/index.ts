@@ -1,10 +1,15 @@
+/** biome-ignore-all lint/complexity/noUselessEscapeInRegex: Ignore as I consider it necessary */
+
 import { z } from "zod";
 
-const emailSchema = z.email({ error: "Invalid email address" });
+const emailSchema = z.email({
+    error: "Invalid email address",
+});
+
 const passwordPolicySchema = z
-    .string()
+    .string({ error: "Password is required" })
     .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"|,.<>\/?]).{8,}$/,
         "Password must be at least 8 characters long and include an uppercase, lowercase, number, and special character"
     );
 
@@ -13,6 +18,7 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Password is required"),
     rememberMe: z.boolean(),
 });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
@@ -20,4 +26,5 @@ export const registerSchema = z.object({
     email: emailSchema,
     password: passwordPolicySchema,
 });
+
 export type RegisterInput = z.infer<typeof registerSchema>;
