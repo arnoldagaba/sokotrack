@@ -140,9 +140,11 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  stockLevels StockLevel[]
-  movements   StockMovement[]
-  user        User?           @relation(fields: [userId], references: [id])
+  stockLevels        StockLevel[]
+  movements          StockMovement[]
+  adjustments        StockAdjustment[]
+  user               User?               @relation(fields: [userId], references: [id])
+  purchaseOrderItems PurchaseOrderItem[]
 
   @@map("warehouse")
 }
@@ -183,6 +185,7 @@ model StockLevel {
   warehouse Warehouse @relation(fields: [warehouseId], references: [id])
 
   @@unique([productId, warehouseId])
+  @@index([warehouseId])
   @@map("stock_level")
 }
 
@@ -213,6 +216,8 @@ model StockMovement {
   warehouse Warehouse @relation(fields: [warehouseId], references: [id])
   user      User      @relation("MovementPerformedBy", fields: [performedBy], references: [id])
 
+  @@index([productId, warehouseId, createdAt])
+  @@index([performedBy, createdAt])
   @@map("stock_movement")
 }
 
@@ -248,6 +253,10 @@ model PurchaseOrder {
 
   items PurchaseOrderItem[]
 
+  @@index([supplierId, createdAt])
+  @@index([createdById, createdAt])
+  @@index([approvedById, createdAt])
+  @@index([status, createdAt])
   @@map("purchase_order")
 }
 
@@ -255,16 +264,20 @@ model PurchaseOrderItem {
   id               String   @id @default(cuid())
   purchaseOrderId  String
   productId        String
+  warehouseId      String
   quantityOrdered  Int
   quantityReceived Int      @default(0)
   unitCost         Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Restrict)
   product       Product       @relation(fields: [productId], references: [id])
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
 
-  @@unique([purchaseOrderId, productId])
+  @@unique([purchaseOrderId, productId, warehouseId])
+  @@index([productId])
+  @@index([warehouseId])
   @@map("purchase_order_item")
 }
 
@@ -301,9 +314,14 @@ model StockAdjustment {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  product     Product @relation(fields: [productId], references: [id])
-  requestedBy User    @relation("AdjustmentRequestedBy", fields: [requestedById], references: [id])
-  approvedBy  User?   @relation("AdjustmentApprovedBy", fields: [approvedById], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+  requestedBy User      @relation("AdjustmentRequestedBy", fields: [requestedById], references: [id])
+  approvedBy  User?     @relation("AdjustmentApprovedBy", fields: [approvedById], references: [id])
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 
+  @@index([warehouseId, createdAt])
+  @@index([requestedById, createdAt])
+  @@index([approvedById, createdAt])
+  @@index([status, createdAt])
   @@map("stock_adjustment")
 }
