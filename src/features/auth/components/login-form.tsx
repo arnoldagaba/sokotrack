@@ -1,5 +1,5 @@
 import { revalidateLogic } from "@tanstack/react-form";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import toast from "react-hot-toast";
 import {
     Card,
@@ -8,13 +8,17 @@ import {
     CardHeader,
     CardTitle,
 } from "#/components/ui/card.tsx";
-import { FieldDescription, FieldGroup } from "#/components/ui/field.tsx";
+import { Field, FieldDescription, FieldGroup } from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form.ts";
 import { authClient } from "#/lib/auth-client.ts";
 import { type LoginInput, loginSchema } from "../schema/index.ts";
+import { Button } from "#/components/ui/button.tsx";
+import GoogleLogo from "#/components/shared/google-logo.tsx";
+import { Badge } from "#/components/ui/badge.tsx";
 
 const LoginForm = () => {
     const navigate = useNavigate();
+    const search = useSearch({from: "/_auth/login"})
 
     const defaultValues: LoginInput = {
         email: "",
@@ -32,7 +36,7 @@ const LoginForm = () => {
                         toast.success(
                             `Welcome back, ${data.user.name || data.user.email}!`
                         );
-                        navigate({ to: "/", replace: true });
+                        navigate({ to: search.redirect ?? "/", replace: true });
                     },
                     onError: ({ error }) => {
                         toast.error(
@@ -51,6 +55,23 @@ const LoginForm = () => {
             modeAfterSubmission: "blur",
         }),
     });
+
+    const handleGoogleSignIn = async () => {
+        await authClient.signIn.social({
+            provider: "google",
+            callbackURL: new URL(
+                search.redirect ?? "/dashboard",
+                window.location.origin
+            ).toString(),
+            fetchOptions: {
+                onError: ({ error }) => {
+                    toast.error(error.message || "Failed to login. Please try again.");
+                }
+            }
+        });
+    }
+
+    const lastMethod = authClient.getLastUsedLoginMethod();
 
     return (
         <Card className="w-full max-w-sm md:max-w-md">
@@ -72,6 +93,22 @@ const LoginForm = () => {
                     }}
                 >
                     <FieldGroup>
+                        <Field>
+                            <Button
+                                className="relative"
+                                onClick={handleGoogleSignIn}
+                                type="button"
+                                variant="outline"
+                            >
+                                <GoogleLogo /> Continue with Google
+                                {lastMethod === "google" && (
+                                    <Badge className="absolute -top-2 right-0">
+                                        Last used
+                                    </Badge>
+                                )}
+                            </Button>
+                        </Field>
+
                         <form.AppField name="email">
                             {(field) => (
                                 <field.FormInput

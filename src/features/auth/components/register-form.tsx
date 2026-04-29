@@ -1,6 +1,8 @@
 import { revalidateLogic } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import toast from "react-hot-toast";
+import GoogleLogo from "#/components/shared/google-logo.tsx";
+import { Button } from "#/components/ui/button.tsx";
 import {
     Card,
     CardContent,
@@ -8,7 +10,7 @@ import {
     CardHeader,
     CardTitle,
 } from "#/components/ui/card.tsx";
-import { FieldDescription, FieldGroup } from "#/components/ui/field.tsx";
+import { Field, FieldDescription, FieldGroup } from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form.ts";
 import { authClient } from "#/lib/auth-client.ts";
 import { type RegisterInput, registerSchema } from "../schema/index.ts";
@@ -51,6 +53,23 @@ const RegisterForm = () => {
             modeAfterSubmission: "blur",
         }),
     });
+
+    const handleGoogleSignup = async () => {
+        await authClient.signIn.social({
+            provider: "google",
+            callbackURL: new URL(
+                "/dashboard",
+                window.location.origin
+            ).toString(),
+            fetchOptions: {
+                onError: ({ error }) => {
+                    toast.error(
+                        error.message || "Failed to sign-up. Please try again."
+                    );
+                },
+            },
+        });
+    };
 
     return (
         <Card className="w-full max-w-sm md:max-w-md">
@@ -103,10 +122,21 @@ const RegisterForm = () => {
                             />
                         </form.AppForm>
 
-                        <FieldDescription className="text-center">
-                            Already have an account?{" "}
-                            <Link to="/login">Login</Link>
-                        </FieldDescription>
+                        <Field>
+                            <Button
+                                className="relative"
+                                onClick={handleGoogleSignup}
+                                type="button"
+                                variant="outline"
+                            >
+                                <GoogleLogo /> Continue with Google
+                            </Button>
+
+                            <FieldDescription className="text-center">
+                                Already have an account?{" "}
+                                <Link to="/login">Login</Link>
+                            </FieldDescription>
+                        </Field>
                     </FieldGroup>
                 </form>
             </CardContent>
