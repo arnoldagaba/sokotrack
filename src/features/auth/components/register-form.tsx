@@ -25,7 +25,7 @@ const RegisterForm = () => {
     const form = useAppForm({
         defaultValues,
         onSubmit: async ({ value }) => {
-            await authClient.signIn.email({
+            await authClient.signUp.email({
                 ...value,
                 fetchOptions: {
                     onSuccess: ({ data }) => {
