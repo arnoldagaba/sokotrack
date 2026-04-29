@@ -20,6 +20,7 @@ export const auth = betterAuth({
             prompt: "select_account",
             clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
             clientId: serverEnv.GOOGLE_CLIENT_ID,
+            disableSignUp: true,
         },
     },
     plugins: [
