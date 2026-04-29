@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -7,6 +6,10 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ==================================================================
+// BETTER-AUTH LAYER
+// ==================================================================
 
 model User {
   id            String    @id
@@ -22,6 +25,13 @@ model User {
   banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
+
+  stockMovements       StockMovement[]   @relation("MovementPerformedBy")
+  approvedAdjustments  StockAdjustment[] @relation("AdjustmentApprovedBy")
+  requestedAdjustments StockAdjustment[] @relation("AdjustmentRequestedBy")
+  approvedOrders       PurchaseOrder[]   @relation("OrderApprovedBy")
+  createdOrders        PurchaseOrder[]   @relation("OrderCreatedBy")
+  warehouses           Warehouse[]
 
   @@unique([email])
   @@map("user")
@@ -74,4 +84,225 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// ==================================================================
+// APP LAYER
+// ==================================================================
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@map("category")
+}
+
+model UnitOfMeasure {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  abbreviation String    @unique
+  products     Product[]
+
+  @@map("unit_of_measure")
+}
+
+model Supplier {
+  id            String  @id @default(cuid())
+  name          String
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+
+  paymentTerms String? // e.g. "Net 30", "Net 60", "Cash on Delivery"
+  isActive     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+
+  @@map("supplier")
+}
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  name      String
+  location  String?
+  userId    String? // User who manages the warehouse
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stockLevels StockLevel[]
+  movements   StockMovement[]
+  user        User?           @relation(fields: [userId], references: [id])
+
+  @@map("warehouse")
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  sku             String   @unique
+  name            String
+  description     String?
+  categoryId      String?
+  unitId          String?
+  costPrice       Int
+  sellingPrice    Int
+  reorderLevel    Int      @default(0)
+  reorderQuantity Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category           Category?           @relation(fields: [categoryId], references: [id])
+  unit               UnitOfMeasure?      @relation(fields: [unitId], references: [id])
+  stockLevels        StockLevel[]
+  movements          StockMovement[]
+  purchaseOrderItems PurchaseOrderItem[]
+  adjustments        StockAdjustment[]
+
+  @@map("product")
+}
+
+model StockLevel {
+  id          String   @id @default(cuid())
+  productId   String
+  warehouseId String
+  quantity    Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([productId, warehouseId])
+  @@map("stock_level")
+}
+
+// ==================================================================
+// LEDGER LAYER
+// ==================================================================
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+model StockMovement {
+  id          String       @id @default(cuid())
+  productId   String
+  warehouseId String
+  type        MovementType
+  quantity    Int
+  referenceId String?
+  notes       String?
+  performedBy String
+  createdAt   DateTime     @default(now())
+
+  product   Product   @relation(fields: [productId], references: [id])
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  user      User      @relation("MovementPerformedBy", fields: [performedBy], references: [id])
+
+  @@map("stock_movement")
+}
+
+// ==================================================================
+// PURCHASE ORDER LAYER
+// ==================================================================
+
+enum PurchaseOrderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  PARTIALLY_APPROVED
+  FULLY_APPROVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id           String              @id @default(cuid())
+  orderNumber  String              @unique
+  supplierId   String
+  status       PurchaseOrderStatus @default(DRAFT)
+  createdById  String
+  approvedById String?
+  notes        String?
+  expectedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  createdBy  User     @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  approvedBy User?    @relation("OrderApprovedBy", fields: [approvedById], references: [id])
+
+  items PurchaseOrderItem[]
+
+  @@map("purchase_order")
+}
+
+model PurchaseOrderItem {
+  id               String   @id @default(cuid())
+  purchaseOrderId  String
+  productId        String
+  quantityOrdered  Int
+  quantityReceived Int      @default(0)
+  unitCost         Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id])
+
+  @@unique([purchaseOrderId, productId])
+  @@map("purchase_order_item")
+}
+
+// ==================================================================
+// STOCK ADJUSTMENT LAYER
+// ==================================================================
+
+enum AdjustmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AdjustmentReason {
+  PHYSICAL_COUNT_DISCREPANCY
+  DAMAGED_GOODS
+  EXPIRY
+  THEFT
+  DATA_ENTRY_ERROR
+  OTHER
+}
+
+model StockAdjustment {
+  id               String           @id @default(cuid())
+  productId        String
+  warehouseId      String
+  previousQuantity Int
+  newQuantity      Int
+  reason           AdjustmentReason
+  notes            String?
+  status           AdjustmentStatus
+  requestedById    String
+  approvedById     String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  product     Product @relation(fields: [productId], references: [id])
+  requestedBy User    @relation("AdjustmentRequestedBy", fields: [requestedById], references: [id])
+  approvedBy  User?   @relation("AdjustmentApprovedBy", fields: [approvedById], references: [id])
+
+  @@map("stock_adjustment")
 }
