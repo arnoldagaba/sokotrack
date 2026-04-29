@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { haveIBeenPwned, lastLoginMethod } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { serverEnv } from "#/env/server.ts";
@@ -19,5 +20,10 @@ export const auth = betterAuth({
             clientId: serverEnv.GOOGLE_CLIENT_ID,
         },
     },
-    plugins: [admin(), tanstackStartCookies()],
+    plugins: [
+        admin(),
+        lastLoginMethod(),
+        haveIBeenPwned(),
+        tanstackStartCookies(),
+    ],
 });
