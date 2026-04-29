@@ -10,7 +10,12 @@ import {
     CardHeader,
     CardTitle,
 } from "#/components/ui/card.tsx";
-import { Field, FieldDescription, FieldGroup } from "#/components/ui/field.tsx";
+import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldSeparator,
+} from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form.ts";
 import { authClient } from "#/lib/auth-client.ts";
 import { type RegisterInput, registerSchema } from "../schema/index.ts";
@@ -121,6 +126,8 @@ const RegisterForm = () => {
                                 submittingLabel="Signing up"
                             />
                         </form.AppForm>
+
+                        <FieldSeparator>or sign-up with google</FieldSeparator>
 
                         <Field>
                             <Button
