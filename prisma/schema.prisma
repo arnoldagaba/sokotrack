@@ -227,6 +227,7 @@ enum PurchaseOrderStatus {
   PARTIALLY_APPROVED
   FULLY_APPROVED
   CANCELLED
+  REJECTED
 }
 
 model PurchaseOrder {
