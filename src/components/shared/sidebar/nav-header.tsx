@@ -8,7 +8,7 @@ const NavHeader = () => (
         render={<Link to="/dashboard" />}
         size="lg"
     >
-        <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-primary">
+        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-primary">
             <HandshakeIcon className="size-4" />
         </div>
 
