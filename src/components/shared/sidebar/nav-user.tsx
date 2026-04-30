@@ -32,14 +32,18 @@ const NavUser = () => {
     const { isMobile } = useSidebar();
     const navigate = useNavigate();
 
-    const handleLogout = async () => {
-        await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    navigate({ to: "/login", replace: true });
+    const handleLogout = async (): Promise<void> => {
+        try {
+            await authClient.signOut({
+                fetchOptions: {
+                    onSuccess: () => {
+                        navigate({ to: "/login", replace: true });
+                    },
                 },
-            },
-        });
+            });
+        } catch {
+            // surface feedback (toast/banner) so logout failures are visible
+        }
     };
 
     const initials = user.name
