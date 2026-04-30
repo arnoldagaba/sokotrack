@@ -24,7 +24,7 @@ const FormPassword = ({
                 <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
                 {isLogin && (
                     <Link
-                        className="hover:text-muted-foreground hover:underline"
+                        className="underline underline-offset-2 hover:text-muted-foreground"
                         to="/forgot-password"
                     >
                         Forgot password?
