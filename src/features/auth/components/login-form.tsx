@@ -1,5 +1,5 @@
 import { revalidateLogic } from "@tanstack/react-form";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import toast from "react-hot-toast";
 import GoogleLogo from "#/components/shared/google-logo.tsx";
 import { Badge } from "#/components/ui/badge.tsx";
@@ -11,12 +11,7 @@ import {
     CardHeader,
     CardTitle,
 } from "#/components/ui/card.tsx";
-import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldSeparator,
-} from "#/components/ui/field.tsx";
+import { Field, FieldGroup, FieldSeparator } from "#/components/ui/field.tsx";
 import { useAppForm } from "#/hooks/form.ts";
 import { authClient } from "#/lib/auth-client.ts";
 import { type LoginInput, loginSchema } from "../schema/index.ts";
@@ -144,11 +139,6 @@ const LoginForm = () => {
                                 submittingLabel="Logging in"
                             />
                         </form.AppForm>
-
-                        <FieldDescription className="text-center">
-                            Don&apos;t have an account?{" "}
-                            <Link to="/register">Sign up</Link>
-                        </FieldDescription>
                     </FieldGroup>
                 </form>
             </CardContent>
