@@ -46,10 +46,14 @@ const NavUser = () => {
         }
     };
 
-    const initials = user.name
-        .split(" ")
-        .map((n) => n.toUpperCase())
-        .join("");
+    const initials =
+        (user.name ?? "")
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((part) => part[0]?.toUpperCase() ?? "")
+            .slice(0, 2)
+            .join("") || "U";
 
     return (
         <SidebarMenu>
