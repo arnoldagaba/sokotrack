@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import Header from "#/components/shared/header.tsx";
 import AppSidebar from "#/components/shared/sidebar/app-sidebar.tsx";
 import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar.tsx";
 import { getSession } from "#/features/auth/functions/index.ts";
@@ -24,7 +25,9 @@ function AppLayout() {
             <AppSidebar />
 
             <SidebarInset>
-                <main>
+                <Header />
+
+                <main className="px-4 pt-2">
                     <Outlet />
                 </main>
             </SidebarInset>
