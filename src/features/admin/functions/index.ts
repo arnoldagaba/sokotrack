@@ -24,6 +24,14 @@ export const listUsers = createServerFn({ method: "GET" })
     .inputValidator(listUsersInputSchema)
     .handler(async ({ data }) => {
         const headers = getRequestHeaders();
+        const session = await auth.api.getSession({ headers });
+        if (!session) {
+            throw redirect({ to: "/login" });
+        }
+        if (session.user.role !== "admin") {
+            throw redirect({ to: "/" });
+        }
+
         const { users, total } = await auth.api.listUsers({
             query: {
                 limit: data.limit,
