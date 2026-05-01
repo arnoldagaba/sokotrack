@@ -7,7 +7,14 @@ const handleUserSessionsRevoke = async (
     userId: string,
     router: ReturnType<typeof getRouter>
 ) => {
-    await authClient.admin.revokeUserSessions({ userId });
+    try {
+        await authClient.admin.revokeUserSessions({ userId });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to revoke sessions";
+        toast.error(message);
+        console.error("[Admin] Failed to revoke user sessions:", error);
+        return;
+    }
     router.invalidate();
 };
 
@@ -16,7 +23,13 @@ const handleUserRemoval = async (userId: string, user: User) => {
         return toast.error("You cannot remove yourself.");
     }
 
-    await authClient.admin.removeUser({ userId });
+    try {
+        await authClient.admin.removeUser({ userId });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to remove user";
+        toast.error(message);
+        console.error("[Admin] Failed to remove user:", error);
+    }
 };
 
 const handleUserImpersonation = async (userId: string, user: User) => {
@@ -25,7 +38,13 @@ const handleUserImpersonation = async (userId: string, user: User) => {
         return toast.error("You cannot impersonate yourself.");
     }
 
-    await authClient.admin.impersonateUser({ userId });
+    try {
+        await authClient.admin.impersonateUser({ userId });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to impersonate user";
+        toast.error(message);
+        console.error("[Admin] Failed to impersonate user:", error);
+    }
 };
 
 const handleUserBan = async (userId: string, user: User) => {
@@ -34,7 +53,13 @@ const handleUserBan = async (userId: string, user: User) => {
         return toast.error("You cannot ban yourself.");
     }
 
-    await authClient.admin.banUser({ userId });
+    try {
+        await authClient.admin.banUser({ userId });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to ban user";
+        toast.error(message);
+        console.error("[Admin] Failed to ban user:", error);
+    }
 };
 
 export {
