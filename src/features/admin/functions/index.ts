@@ -22,9 +22,11 @@ export const requireAdmin = createServerFn({ method: "GET" }).handler(
 
 export const listUsers = createServerFn({ method: "GET" })
     .middleware([adminMiddleware])
-    .handler(async () =>
-        auth.api.listUsers({
-            query: { limit: 50, offset: 0 },
+    .handler(async () => {
+        const { users, total } = await auth.api.listUsers({
+            query: {},
             headers: new Headers(),
-        })
-    );
+        });
+
+        return { users, total };
+    });
