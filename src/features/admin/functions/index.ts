@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { adminMiddleware } from "#/features/admin/middleware/index.ts";
 import { auth } from "#/lib/auth.ts";
+import { listUsersInputSchema } from "../schema/index.ts";
 
 export const requireAdmin = createServerFn({ method: "GET" }).handler(
     async () => {
@@ -22,10 +23,17 @@ export const requireAdmin = createServerFn({ method: "GET" }).handler(
 
 export const listUsers = createServerFn({ method: "GET" })
     .middleware([adminMiddleware])
-    .handler(async () => {
+    .inputValidator(listUsersInputSchema)
+    .handler(async ({ data }) => {
         const headers = getRequestHeaders();
         const { users, total } = await auth.api.listUsers({
-            query: {},
+            query: {
+                limit: data.limit,
+                offset: data.offset,
+                searchField: "email",
+                searchValue: data.search,
+                searchOperator: "contains",
+            },
             headers,
         });
 
