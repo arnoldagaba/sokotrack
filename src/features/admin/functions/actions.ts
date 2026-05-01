@@ -12,9 +12,8 @@ const handleUserSessionsRevoke = async (
 };
 
 const handleUserRemoval = async (userId: string, user: User) => {
-    const currentUser = user.id;
-    if (currentUser === userId) {
-        return toast.error("You cannot impersonate yourself.");
+    if (user.id === userId) {
+        return toast.error("You cannot remove yourself.");
     }
 
     await authClient.admin.removeUser({ userId });
