@@ -27,75 +27,69 @@ import {
 import { TableColumnHeader } from "./table-column-header.tsx";
 
 const ActionsCell = ({ row }: { row: Row<UserWithRole> }) => {
-    {
-        const router = useRouter();
-        const { user } = useRouteContext({ from: "/_app" });
-        const userId = row.original.id;
+    const router = useRouter();
+    const { user } = useRouteContext({ from: "/_app" });
+    const userId = row.original.id;
 
-        return (
-            <DropdownMenu>
-                <DropdownMenuTrigger
-                    render={
-                        <Button className="h-8 w-8 p-0" variant="ghost">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontalIcon className="h-4 w-4" />
-                        </Button>
-                    }
-                />
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <Button className="h-8 w-8 p-0" variant="ghost">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontalIcon className="h-4 w-4" />
+                    </Button>
+                }
+            />
 
-                <DropdownMenuContent align="end">
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem
-                            onClick={() =>
-                                router.navigate({
-                                    to: "/admin/users/$userId",
-                                    params: { userId },
-                                })
-                            }
-                        >
-                            <EyeIcon /> View user
-                        </DropdownMenuItem>
+            <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                    <DropdownMenuItem
+                        onClick={() =>
+                            router.navigate({
+                                to: "/admin/users/$userId",
+                                params: { userId },
+                            })
+                        }
+                    >
+                        <EyeIcon /> View user
+                    </DropdownMenuItem>
 
-                        <DropdownMenuItem
-                            onClick={() =>
-                                handleUserSessionsRevoke(userId, router)
-                            }
-                        >
-                            <LogOutIcon /> Revoke all sessions
-                        </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => handleUserSessionsRevoke(userId, router)}
+                    >
+                        <LogOutIcon /> Revoke all sessions
+                    </DropdownMenuItem>
 
-                        {user.id !== userId && (
-                            <>
-                                <DropdownMenuItem
-                                    onClick={() =>
-                                        handleUserImpersonation(userId, user)
-                                    }
-                                >
-                                    <UserRoundSearchIcon /> Impersonate user
-                                </DropdownMenuItem>
+                    {user.id !== userId && (
+                        <>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    handleUserImpersonation(userId, user)
+                                }
+                            >
+                                <UserRoundSearchIcon /> Impersonate user
+                            </DropdownMenuItem>
 
-                                <DropdownMenuItem
-                                    onClick={() => handleUserBan(userId, user)}
-                                >
-                                    <UserXIcon /> Ban user
-                                </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleUserBan(userId, user)}
+                            >
+                                <UserXIcon /> Ban user
+                            </DropdownMenuItem>
 
-                                <DropdownMenuItem
-                                    className="text-destructive"
-                                    onClick={() =>
-                                        handleUserRemoval(userId, user)
-                                    }
-                                >
-                                    <Trash2Icon /> Remove user
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuGroup>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        );
-    }
-}
+                            <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleUserRemoval(userId, user)}
+                            >
+                                <Trash2Icon /> Remove user
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+};
 
 export const columns: ColumnDef<UserWithRole>[] = [
     {
@@ -149,6 +143,6 @@ export const columns: ColumnDef<UserWithRole>[] = [
     {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => <ActionsCell row={row} />
+        cell: ({ row }) => <ActionsCell row={row} />,
     },
 ];
