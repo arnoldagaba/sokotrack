@@ -298,8 +298,8 @@
         font-weight: 600;
         line-height: 1.25;
         letter-spacing: -0.02em;
-        text-wrap: balance; /* prevent awkward orphaned words       */
-        @apply font-heading; /* prevent awkward orphaned words       */
+        text-wrap: balance; /* prevent awkward orphaned words */
+        @apply font-heading; /* prevent awkward orphaned words */
     }
 
     /* ── Body copy ────────────────────────────────────────── */
@@ -307,8 +307,8 @@
     li,
     figcaption,
     blockquote {
-        max-width: 72ch; /* keeps lines readable (~65–70 chars)  */
-        text-wrap: pretty; /* keeps lines readable (~65–70 chars)  */
+        max-width: 72ch; /* keeps lines readable (~65–70 chars) */
+        text-wrap: pretty; /* improves line breaks, avoids orphans */
     }
 
     /* ── Interactive ──────────────────────────────────────── */
@@ -387,11 +387,11 @@
     /* ── Text selection ───────────────────────────────────── */
     ::selection {
         color: var(--foreground);
-        background-color: oklch(0.42 0.09 223.9 / 20%);
+        background-color: color-mix(in oklch, var(--ring) 20%, transparent 80%);
     }
 
     .dark ::selection {
-        background-color: oklch(0.58 0.07 213.5 / 30%);
+        background-color: color-mix(in oklch, var(--ring) 30%, transparent 70%);
     }
 
     /* ── Native scrollbar — themed, unobtrusive ───────────── */
