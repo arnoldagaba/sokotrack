@@ -6,6 +6,7 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
+    type RowSelectionState,
     type SortingState,
     useReactTable,
     type VisibilityState,
@@ -55,7 +56,7 @@ const UserTable = <TData, TValue>({
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         {}
     );
-    const [rowSelection, setRowSelection] = useState({});
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
     const table = useReactTable({
         columns,
@@ -75,6 +76,8 @@ const UserTable = <TData, TValue>({
             rowSelection,
         },
     });
+
+    const PAGE_SIZE_OPTIONS = [10, 20, 25, 30, 40, 50] as const;
 
     return (
         <div>
@@ -204,7 +207,7 @@ const UserTable = <TData, TValue>({
                             </SelectTrigger>
 
                             <SelectContent side="top">
-                                {[10, 20, 25, 30, 40, 50].map((pageSize) => (
+                                {PAGE_SIZE_OPTIONS.map((pageSize) => (
                                     <SelectItem
                                         key={pageSize}
                                         value={`${pageSize}`}
