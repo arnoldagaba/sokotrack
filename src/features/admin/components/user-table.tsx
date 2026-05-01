@@ -80,6 +80,7 @@ const UserTable = <TData, TValue>({
         <div>
             <div className="flex items-center justify-between gap-2 py-4">
                 <Input
+                    aria-label="Filter by email"
                     className="max-w-sm"
                     onChange={(event) =>
                         table
