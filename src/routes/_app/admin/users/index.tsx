@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_app/admin/users/")({
 });
 
 function RouteComponent() {
-    const { users } = Route.useLoaderData();
+    const { users, total } = Route.useLoaderData();
 
     return (
         <div>
