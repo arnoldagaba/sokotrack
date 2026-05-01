@@ -25,7 +25,11 @@ export function TableColumnHeader<TData, TValue>({
     ...props
 }: DataTableColumnHeaderProps<TData, TValue>) {
     if (!column.getCanSort()) {
-        return <div className={cn(className)}>{title}</div>;
+        return (
+            <div {...props} className={cn(className)}>
+                {title}
+            </div>
+        );
     }
 
     return (
