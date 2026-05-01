@@ -78,7 +78,7 @@ const UserTable = <TData, TValue>({
 
     return (
         <div>
-            <div className="flex items-center py-4">
+            <div className="flex items-center justify-between gap-2 py-4">
                 <Input
                     className="max-w-sm"
                     onChange={(event) =>
@@ -253,7 +253,7 @@ const UserTable = <TData, TValue>({
                             <span className="sr-only">Go to next page</span>
                             <ChevronRightIcon />
                         </Button>
-                        
+
                         <Button
                             className="hidden size-8 lg:flex"
                             disabled={!table.getCanNextPage()}
