@@ -45,11 +45,13 @@ import {
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    total: number;
 }
 
 const UserTable = <TData, TValue>({
     columns,
     data,
+    total,
 }: DataTableProps<TData, TValue>) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,6 +71,8 @@ const UserTable = <TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
+        manualPagination: true,
+        pageCount: Math.ceil(total / 10),
         state: {
             sorting,
             columnFilters,

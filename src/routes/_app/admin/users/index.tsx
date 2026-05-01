@@ -36,7 +36,7 @@ function RouteComponent() {
 
     return (
         <div>
-            <UserTable columns={columns} data={users} />
+            <UserTable columns={columns} data={users} total={total} />
         </div>
     );
 }
