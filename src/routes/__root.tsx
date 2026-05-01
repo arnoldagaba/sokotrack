@@ -1,13 +1,24 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import {
+    createRootRouteWithContext,
+    HeadContent,
+    Scripts,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 
 import { TooltipProvider } from "#/components/ui/tooltip.tsx";
+import TanstackQueryProvider from "#/integrations/react-query.tsx";
 import appCss from "../styles.css?url";
 
-export const Route = createRootRoute({
+interface RouterContext {
+    queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
     head: () => ({
         meta: [
             {
@@ -39,22 +50,33 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </head>
 
             <body>
-                <ThemeProvider attribute="class" enableColorScheme enableSystem>
-                    <TooltipProvider>{children}</TooltipProvider>
-                    <Toaster position="top-right" />
-                </ThemeProvider>
+                <TanstackQueryProvider>
+                    <ThemeProvider
+                        attribute="class"
+                        enableColorScheme
+                        enableSystem
+                    >
+                        <TooltipProvider>{children}</TooltipProvider>
+                        <Toaster position="top-right" />
+                    </ThemeProvider>
 
-                <TanStackDevtools
-                    config={{
-                        position: "bottom-right",
-                    }}
-                    plugins={[
-                        {
-                            name: "Tanstack Router",
-                            render: <TanStackRouterDevtoolsPanel />,
-                        },
-                    ]}
-                />
+                    <TanStackDevtools
+                        config={{
+                            position: "bottom-right",
+                        }}
+                        plugins={[
+                            {
+                                name: "Tanstack Router",
+                                render: <TanStackRouterDevtoolsPanel />,
+                            },
+                            {
+                                name: "Tanstack Query",
+                                render: <ReactQueryDevtoolsPanel />,
+                            },
+                        ]}
+                    />
+                </TanstackQueryProvider>
+
                 <Scripts />
             </body>
         </html>
