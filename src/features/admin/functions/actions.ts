@@ -156,12 +156,23 @@ const handleBulkUserBan = async (
     }
 
     try {
-        const promises = filteredIds.map((id) =>
-            authClient.admin.banUser({ userId: id })
+        const results = await Promise.allSettled(
+            filteredIds.map((id) => authClient.admin.banUser({ userId: id }))
         );
-        await Promise.all(promises);
-        toast.success(`Banned ${filteredIds.length} user(s)`);
-        router.invalidate();
+        const successCount = results.filter(
+            (result) => result.status === "fulfilled"
+        ).length;
+        const failureCount = results.length - successCount;
+
+        if (successCount > 0) {
+            await router.invalidate({ sync: true });
+        }
+
+        if (failureCount === 0) {
+            toast.success(`Banned ${successCount} user(s)`);
+        } else {
+            toast.error(`Banned ${successCount} user(s); ${failureCount} failed`);
+        }
     } catch (error) {
         const message =
             error instanceof Error ? error.message : "Failed to ban users";
