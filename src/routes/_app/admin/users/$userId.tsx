@@ -150,7 +150,6 @@ function RouteComponent() {
             setOpenDialog(null);
         }
     };
-    };
 
     const removeUser = async () => {
         await handleUserRemoval(user.id, currentUser, router);
