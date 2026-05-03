@@ -140,13 +140,16 @@ function RouteComponent() {
     };
 
     const toggleBanState = async (nextBanned: boolean) => {
-        await handleUserBanStatusChange(
+        const didUpdate = await handleUserBanStatusChange(
             user.id,
             nextBanned,
             currentUser,
             router
         );
-        setOpenDialog(null);
+        if (didUpdate) {
+            setOpenDialog(null);
+        }
+    };
     };
 
     const removeUser = async () => {
