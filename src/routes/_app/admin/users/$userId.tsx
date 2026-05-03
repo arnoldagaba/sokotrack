@@ -183,7 +183,7 @@ function RouteComponent() {
                         <div className="space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
                                 <h1 className="font-heading text-3xl tracking-tight">
-                                    {user.name}
+                                    {user.name ?? user.email}
                                 </h1>
                                 <Badge
                                     className={cn(
