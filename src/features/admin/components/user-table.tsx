@@ -8,6 +8,8 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
+    type OnChangeFn,
+    type PaginationState,
     type RowSelectionState,
     type SortingState,
     useReactTable,
@@ -57,22 +59,35 @@ interface BulkActionHandlers {
     onBulkUnban?: (userIds: string[]) => void;
 }
 
-interface DataTableProps<TData, TValue> extends BulkActionHandlers {
+const passthroughGlobalFilter = () => true;
+
+interface DataTableProps<TData extends { id: string }, TValue>
+    extends BulkActionHandlers {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    globalFilter: string;
     isLoading?: boolean;
+    onGlobalFilterChange: OnChangeFn<string>;
+    onPaginationChange: OnChangeFn<PaginationState>;
+    pageIndex: number;
+    pageSize: number;
     total: number;
 }
 
-const UserTable = <TData, TValue>({
+const UserTable = <TData extends { id: string }, TValue>({
     columns,
     data,
+    globalFilter,
     total,
     isLoading = false,
+    onGlobalFilterChange,
+    onPaginationChange,
     onBulkBan,
     onBulkUnban,
     onBulkDelete,
     onBulkRevokeSessions,
+    pageIndex,
+    pageSize,
 }: DataTableProps<TData, TValue>) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -80,13 +95,13 @@ const UserTable = <TData, TValue>({
         {}
     );
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-    const [globalFilter, setGlobalFilter] = useState("");
     const [roleFilter, setRoleFilter] = useState<string>("all");
     const [bannedFilter, setBannedFilter] = useState<string>("all");
 
     const table = useReactTable({
         columns,
         data,
+        getRowId: (row) => row.id,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
@@ -95,16 +110,22 @@ const UserTable = <TData, TValue>({
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
-        onGlobalFilterChange: setGlobalFilter,
-        globalFilterFn: "includesString",
+        onGlobalFilterChange,
+        onPaginationChange,
+        // Search is handled by the route loader; keep only local column filters.
+        globalFilterFn: passthroughGlobalFilter,
         manualPagination: true,
-        pageCount: Math.ceil(total / 10),
+        pageCount: Math.ceil(total / pageSize),
         state: {
             sorting,
             columnFilters,
             columnVisibility,
             rowSelection,
             globalFilter,
+            pagination: {
+                pageIndex,
+                pageSize,
+            },
         },
     });
 
@@ -112,12 +133,10 @@ const UserTable = <TData, TValue>({
     const skeletonRowCount = table.getState().pagination.pageSize;
     const visibleColumnCount = table.getVisibleLeafColumns().length;
 
-    const selectedRows = Object.keys(rowSelection);
-    const hasSelection = selectedRows.length > 0;
     const selectedUserIds = table
         .getSelectedRowModel()
-        .rows.map((row) => row.original)
-        .map((user) => (user as { id: string }).id);
+        .rows.map((row) => row.original.id);
+    const hasSelection = selectedUserIds.length > 0;
 
     return (
         <div>
@@ -129,7 +148,7 @@ const UserTable = <TData, TValue>({
                         onBulkRevokeSessions) && (
                         <div className="flex items-center gap-2 rounded-md border bg-muted/50 p-2">
                             <span className="text-muted-foreground text-sm">
-                                {selectedRows.length} selected
+                                {selectedUserIds.length} selected
                             </span>
                             <div className="flex items-center gap-1">
                                 {onBulkBan && (
@@ -368,9 +387,9 @@ const UserTable = <TData, TValue>({
                         <p className="font-medium text-sm">Rows per page</p>
 
                         <Select
-                            onValueChange={(value) => {
-                                table.setPageSize(Number(value));
-                            }}
+                            onValueChange={(value) =>
+                                table.setPageSize(Number(value))
+                            }
                             value={`${table.getState().pagination.pageSize}`}
                         >
                             <SelectTrigger className="h-8 w-17.5">
