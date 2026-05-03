@@ -34,7 +34,7 @@ const handleUserRemoval = async (
     try {
         await authClient.admin.removeUser({ userId });
         toast.success("User removed successfully");
-        router.invalidate();
+        await router.invalidate({ sync: true });
     } catch (error) {
         const message =
             error instanceof Error ? error.message : "Failed to remove user";
