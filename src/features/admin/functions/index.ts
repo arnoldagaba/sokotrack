@@ -147,7 +147,6 @@ export const listUserSessions = createServerFn({ method: "GET" })
                 id: true,
                 impersonatedBy: true,
                 ipAddress: true,
-                token: true,
                 updatedAt: true,
                 userAgent: true,
             },
