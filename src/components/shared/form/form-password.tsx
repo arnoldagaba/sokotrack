@@ -4,12 +4,14 @@ import { Field, FieldError, FieldLabel } from "../../ui/field.tsx";
 import PasswordInput from "../password-input.tsx";
 
 interface FormPasswordProps {
+    autoComplete?: string;
     isLogin: boolean;
     label?: string;
     placeholder?: string;
 }
 
 const FormPassword = ({
+    autoComplete,
     label = "Password",
     placeholder = "Enter your password",
     isLogin = false,
@@ -35,7 +37,8 @@ const FormPassword = ({
             <PasswordInput
                 aria-invalid={isInvalid}
                 autoComplete={
-                    isLogin ? "current-password webauthn" : "new-password"
+                    autoComplete ??
+                    (isLogin ? "current-password webauthn" : "new-password")
                 }
                 id={field.name}
                 name={field.name}
