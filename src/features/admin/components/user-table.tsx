@@ -106,7 +106,7 @@ const UserTable = <TData, TValue>({
                     <DropdownMenuTrigger
                         render={
                             <Button className="ml-auto" variant="outline">
-                                Columns
+                                Filters
                             </Button>
                         }
                     />
