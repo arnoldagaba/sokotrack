@@ -87,6 +87,8 @@ const UserTable = <TData, TValue>({
     });
 
     const PAGE_SIZE_OPTIONS = [10, 20, 25, 30, 40, 50] as const;
+    const skeletonRowCount = table.getState().pagination.pageSize;
+    const visibleColumnCount = table.getVisibleLeafColumns().length;
 
     return (
         <div>
@@ -157,23 +159,21 @@ const UserTable = <TData, TValue>({
 
                     <TableBody>
                         {isLoading &&
-const PAGE_SIZE_OPTIONS = [10, 20, 25, 30, 40, 50] as const;
-const skeletonRowCount = table.getState().pagination.pageSize;
-const visibleColumnCount = table.getVisibleLeafColumns().length;
-
-...
-
-                            Array.from({ length: skeletonRowCount }).map((_, i) => (
-                                <TableRow key={`skeleton-${i}`}>
-                                    {Array.from({ length: visibleColumnCount }).map((_, j) => (
-                                        <TableCell
-                                            key={`skeleton-cell-${j}`}
-                                        >
-                                            <Skeleton className="h-4 w-full" />
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))}
+                            Array.from({ length: skeletonRowCount }).map(
+                                (_, i) => (
+                                    <TableRow key={`skeleton-${i}`}>
+                                        {Array.from({
+                                            length: visibleColumnCount,
+                                        }).map((_, j) => (
+                                            <TableCell
+                                                key={`skeleton-cell-${j}`}
+                                            >
+                                                <Skeleton className="h-4 w-full" />
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                )
+                            )}
                         {!isLoading &&
                             table.getRowModel().rows.length === 0 && (
                                 <TableRow>
