@@ -1,5 +1,6 @@
 import {
     createFileRoute,
+    Link,
     useRouteContext,
     useRouter,
 } from "@tanstack/react-router";
@@ -8,7 +9,9 @@ import {
     type OnChangeFn,
     type PaginationState,
 } from "@tanstack/react-table";
+import { UserPlusIcon } from "lucide-react";
 import { z } from "zod";
+import { Button } from "#/components/ui/button.tsx";
 import { columns } from "#/features/admin/components/columns.tsx";
 import UserTable from "#/features/admin/components/user-table.tsx";
 import {
@@ -109,7 +112,25 @@ function RouteComponent() {
     };
 
     return (
-        <div>
+        <div className="space-y-6 pb-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-1">
+                    <h1 className="font-heading text-3xl tracking-tight">
+                        User Directory
+                    </h1>
+                    <p className="max-w-2xl text-muted-foreground text-sm/6">
+                        Search, filter, and bulk-manage the people who can
+                        access SokoTrack. Drill into a user record for sessions
+                        and higher-risk actions.
+                    </p>
+                </div>
+
+                <Button render={<Link to="/admin/users/new" />}>
+                    <UserPlusIcon />
+                    Create user
+                </Button>
+            </div>
+
             <UserTable
                 columns={columns}
                 data={users}
