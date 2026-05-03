@@ -157,9 +157,15 @@ const UserTable = <TData, TValue>({
 
                     <TableBody>
                         {isLoading &&
-                            Array.from({ length: 10 }).map((_, i) => (
+const PAGE_SIZE_OPTIONS = [10, 20, 25, 30, 40, 50] as const;
+const skeletonRowCount = table.getState().pagination.pageSize;
+const visibleColumnCount = table.getVisibleLeafColumns().length;
+
+...
+
+                            Array.from({ length: skeletonRowCount }).map((_, i) => (
                                 <TableRow key={`skeleton-${i}`}>
-                                    {columns.map((_, j) => (
+                                    {Array.from({ length: visibleColumnCount }).map((_, j) => (
                                         <TableCell
                                             key={`skeleton-cell-${j}`}
                                         >
@@ -173,7 +179,7 @@ const UserTable = <TData, TValue>({
                                 <TableRow>
                                     <TableCell
                                         className="h-24 text-center"
-                                        colSpan={columns.length}
+                                        colSpan={visibleColumnCount}
                                     >
                                         No results.
                                     </TableCell>
