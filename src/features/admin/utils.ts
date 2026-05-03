@@ -17,13 +17,14 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
 });
 
-const normalizeAdminRole = (role: string | null | undefined): Role => {
+const parseAdminRole = (role: string | null | undefined): Role | undefined => {
     if (role === "admin" || role === "manager" || role === "staff") {
         return role;
     }
-
-    return "staff";
 };
+
+const normalizeAdminRole = (role: string | null | undefined): Role =>
+    parseAdminRole(role) ?? "staff";
 
 const getAdminRoleLabel = (role: string | null | undefined) =>
     roleLabels[normalizeAdminRole(role)];
@@ -68,4 +69,5 @@ export {
     getAdminRoleLabel,
     getUserInitials,
     normalizeAdminRole,
+    parseAdminRole,
 };
