@@ -1,5 +1,9 @@
 import { revalidateLogic } from "@tanstack/react-form";
-import { createFileRoute, useRouteContext, useRouter } from "@tanstack/react-router";
+import {
+    createFileRoute,
+    useRouteContext,
+    useRouter,
+} from "@tanstack/react-router";
 import {
     KeyRoundIcon,
     LaptopMinimalCheckIcon,
@@ -25,19 +29,16 @@ import {
     FieldLabel,
 } from "#/components/ui/field.tsx";
 import { Spinner } from "#/components/ui/spinner.tsx";
+import { formatAdminDate, getAdminRoleLabel } from "#/features/admin/utils.ts";
 import {
     changeCurrentUserPassword,
     listCurrentUserSessions,
     revokeOtherCurrentUserSessions,
 } from "#/features/auth/functions/index.ts";
 import {
-    changePasswordSchema,
     type ChangePasswordInput,
+    changePasswordSchema,
 } from "#/features/auth/schema/index.ts";
-import {
-    formatAdminDate,
-    getAdminRoleLabel,
-} from "#/features/admin/utils.ts";
 import { useAppForm } from "#/hooks/form.ts";
 import { authClient } from "#/lib/auth-client.ts";
 
@@ -45,6 +46,9 @@ export const Route = createFileRoute("/_app/settings")({
     loader: async () => listCurrentUserSessions(),
     component: RouteComponent,
 });
+
+const MAX_USER_AGENT_DISPLAY_LENGTH = 88;
+const TRUNCATED_USER_AGENT_LENGTH = MAX_USER_AGENT_DISPLAY_LENGTH - 3;
 
 const formatLoginMethodLabel = (method: string | null | undefined) => {
     if (!method) {
@@ -71,7 +75,9 @@ const formatSessionAgent = (userAgent: string | null) => {
         return "Unknown device";
     }
 
-    return userAgent.length > 88 ? `${userAgent.slice(0, 85)}...` : userAgent;
+    return userAgent.length > MAX_USER_AGENT_DISPLAY_LENGTH
+        ? `${userAgent.slice(0, TRUNCATED_USER_AGENT_LENGTH)}...`
+        : userAgent;
 };
 
 const SessionList = ({
@@ -86,50 +92,58 @@ const SessionList = ({
         updatedAt: Date;
         userAgent: string | null;
     }>;
-}) => {
-    return (
-        <div className="space-y-3">
-            {sessions.map((accountSession) => (
-                <div
-                    className="rounded-2xl border border-border/60 bg-background/70 p-4"
-                    key={accountSession.id}
-                >
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="space-y-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <div className="font-medium">
-                                    {formatSessionAgent(accountSession.userAgent)}
-                                </div>
-                                {accountSession.isCurrent ? (
-                                    <Badge variant="secondary">
-                                        Current session
-                                    </Badge>
-                                ) : null}
+}) => (
+    <div className="space-y-3">
+        {sessions.map((accountSession) => (
+            <div
+                className="rounded-2xl border border-border/60 bg-background/70 p-4"
+                key={accountSession.id}
+            >
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="font-medium">
+                                {formatSessionAgent(accountSession.userAgent)}
                             </div>
-                            <div className="text-muted-foreground text-sm">
-                                {accountSession.ipAddress || "IP not captured"}
-                            </div>
+                            {accountSession.isCurrent ? (
+                                <Badge variant="secondary">
+                                    Current session
+                                </Badge>
+                            ) : null}
                         </div>
+                        <div className="text-muted-foreground text-sm">
+                            {accountSession.ipAddress || "IP not captured"}
+                        </div>
+                    </div>
 
-                        <div className="text-muted-foreground text-sm/6 lg:text-right">
-                            <div>Started {formatAdminDate(accountSession.createdAt)}</div>
-                            <div>Last updated {formatAdminDate(accountSession.updatedAt)}</div>
-                            <div>Expires {formatAdminDate(accountSession.expiresAt)}</div>
+                    <div className="text-muted-foreground text-sm/6 lg:text-right">
+                        <div>
+                            Started {formatAdminDate(accountSession.createdAt)}
+                        </div>
+                        <div>
+                            Last updated{" "}
+                            {formatAdminDate(accountSession.updatedAt)}
+                        </div>
+                        <div>
+                            Expires {formatAdminDate(accountSession.expiresAt)}
                         </div>
                     </div>
                 </div>
-            ))}
-        </div>
-    );
-};
+            </div>
+        ))}
+    </div>
+);
 
 function RouteComponent() {
     const { sessions } = Route.useLoaderData();
     const { session, user } = useRouteContext({ from: "/_app" });
     const router = useRouter();
-    const [isRevokingOtherSessions, setIsRevokingOtherSessions] = useState(false);
+    const [isRevokingOtherSessions, setIsRevokingOtherSessions] =
+        useState(false);
     const isImpersonating = session.session.impersonatedBy != null;
-    const otherSessionCount = sessions.filter((value) => !value.isCurrent).length;
+    const otherSessionCount = sessions.filter(
+        (value) => !value.isCurrent
+    ).length;
     const lastMethod = authClient.getLastUsedLoginMethod();
 
     const defaultValues: ChangePasswordInput = {
@@ -168,7 +182,11 @@ function RouteComponent() {
     });
 
     const handleRevokeOtherSessions = async () => {
-        if (isImpersonating || isRevokingOtherSessions || otherSessionCount === 0) {
+        if (
+            isImpersonating ||
+            isRevokingOtherSessions ||
+            otherSessionCount === 0
+        ) {
             return;
         }
 
@@ -217,9 +235,9 @@ function RouteComponent() {
                                         Settings
                                     </h1>
                                     <p className="max-w-2xl text-muted-foreground text-sm/6">
-                                        Manage password posture, session hygiene,
-                                        and the security signals attached to your
-                                        account.
+                                        Manage password posture, session
+                                        hygiene, and the security signals
+                                        attached to your account.
                                     </p>
                                 </div>
                             </div>
@@ -274,7 +292,8 @@ function RouteComponent() {
                             </div>
                             <p className="text-muted-foreground">
                                 You are currently operating with the{" "}
-                                {getAdminRoleLabel(user.role).toLowerCase()} role.
+                                {getAdminRoleLabel(user.role).toLowerCase()}{" "}
+                                role.
                             </p>
                         </div>
                     </CardContent>
@@ -287,7 +306,8 @@ function RouteComponent() {
                         <TriangleAlertIcon className="mt-0.5 size-5 text-amber-600 dark:text-amber-300" />
                         <div>
                             <div className="font-medium">
-                                Security actions are disabled during impersonation
+                                Security actions are disabled during
+                                impersonation
                             </div>
                             <p className="text-muted-foreground text-sm/6">
                                 Stop impersonation from the user menu before
@@ -367,7 +387,11 @@ function RouteComponent() {
                                             }
                                             type="submit"
                                         >
-                                            {isSubmitting ? <Spinner /> : <KeyRoundIcon />}
+                                            {isSubmitting ? (
+                                                <Spinner />
+                                            ) : (
+                                                <KeyRoundIcon />
+                                            )}
                                             {isSubmitting
                                                 ? "Updating password..."
                                                 : "Change password"}
@@ -413,7 +437,9 @@ function RouteComponent() {
             <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                 <Card>
                     <CardHeader className="border-b">
-                        <CardDescription>Active device inventory</CardDescription>
+                        <CardDescription>
+                            Active device inventory
+                        </CardDescription>
                         <CardTitle>Session activity</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-4">
