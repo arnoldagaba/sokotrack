@@ -84,7 +84,117 @@ const handleUserBan = async (
     }
 };
 
+const handleBulkUserBan = async (
+    userIds: string[],
+    user: User,
+    router: ReturnType<typeof getRouter>
+) => {
+    const currentUserId = user.id;
+    const filteredIds = userIds.filter((id) => id !== currentUserId);
+
+    if (filteredIds.length === 0) {
+        return toast.error("No valid users to ban (you cannot ban yourself)");
+    }
+
+    try {
+        const promises = filteredIds.map((id) =>
+            authClient.admin.banUser({ userId: id })
+        );
+        await Promise.all(promises);
+        toast.success(`Banned ${filteredIds.length} user(s)`);
+        router.invalidate();
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : "Failed to ban users";
+        toast.error(message);
+        console.error("[Admin] Failed to ban users:", error);
+    }
+};
+
+const handleBulkUserUnban = async (
+    userIds: string[],
+    user: User,
+    router: ReturnType<typeof getRouter>
+) => {
+    const currentUserId = user.id;
+    const filteredIds = userIds.filter((id) => id !== currentUserId);
+
+    if (filteredIds.length === 0) {
+        return toast.error(
+            "No valid users to unban (you cannot unban yourself)"
+        );
+    }
+
+    try {
+        const promises = filteredIds.map((id) =>
+            authClient.admin.banUser({ userId: id })
+        );
+        await Promise.all(promises);
+        toast.success(`Unbanned ${filteredIds.length} user(s)`);
+        router.invalidate();
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : "Failed to unban users";
+        toast.error(message);
+        console.error("[Admin] Failed to unban users:", error);
+    }
+};
+
+const handleBulkUserRemoval = async (
+    userIds: string[],
+    user: User,
+    router: ReturnType<typeof getRouter>
+) => {
+    const currentUserId = user.id;
+    const filteredIds = userIds.filter((id) => id !== currentUserId);
+
+    if (filteredIds.length === 0) {
+        return toast.error(
+            "No valid users to remove (you cannot remove yourself)"
+        );
+    }
+
+    try {
+        const promises = filteredIds.map((id) =>
+            authClient.admin.removeUser({ userId: id })
+        );
+        await Promise.all(promises);
+        toast.success(`Removed ${filteredIds.length} user(s)`);
+        router.invalidate({ sync: true });
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : "Failed to remove users";
+        toast.error(message);
+        console.error("[Admin] Failed to remove users:", error);
+    }
+};
+
+const handleBulkUserSessionsRevoke = async (
+    userIds: string[],
+    router: ReturnType<typeof getRouter>
+) => {
+    try {
+        const promises = userIds.map((id) =>
+            authClient.admin.revokeUserSessions({ userId: id })
+        );
+        await Promise.all(promises);
+        toast.success(`Revoked sessions for ${userIds.length} user(s)`);
+        router.invalidate();
+    } catch (error) {
+        const message =
+            error instanceof Error
+                ? error.message
+                : "Failed to revoke sessions";
+        toast.error(message);
+        console.error("[Admin] Failed to revoke user sessions:", error);
+    }
+};
+
 export {
+    handleBulkUserBan,
+    handleBulkUserRemoval,
+    handleBulkUserSessionsRevoke,
+    handleBulkUserUnban,
     handleUserBan,
     handleUserImpersonation,
     handleUserRemoval,
