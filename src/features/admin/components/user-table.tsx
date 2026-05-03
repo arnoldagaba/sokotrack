@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: For simplicity */
+
 import {
     type ColumnDef,
     type ColumnFiltersState,
@@ -33,6 +35,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "#/components/ui/select.tsx";
+import { Skeleton } from "#/components/ui/skeleton.tsx";
 import {
     Table,
     TableBody,
@@ -45,6 +48,7 @@ import {
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    isLoading?: boolean;
     total: number;
 }
 
@@ -52,6 +56,7 @@ const UserTable = <TData, TValue>({
     columns,
     data,
     total,
+    isLoading = false,
 }: DataTableProps<TData, TValue>) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -151,7 +156,31 @@ const UserTable = <TData, TValue>({
                     </TableHeader>
 
                     <TableBody>
-                        {table.getRowModel().rows.length ? (
+                        {isLoading &&
+                            Array.from({ length: 10 }).map((_, i) => (
+                                <TableRow key={`skeleton-${i}`}>
+                                    {columns.map((_, j) => (
+                                        <TableCell
+                                            key={`skeleton-cell-${j}`}
+                                        >
+                                            <Skeleton className="h-4 w-full" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        {!isLoading &&
+                            table.getRowModel().rows.length === 0 && (
+                                <TableRow>
+                                    <TableCell
+                                        className="h-24 text-center"
+                                        colSpan={columns.length}
+                                    >
+                                        No results.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        {!isLoading &&
+                            table.getRowModel().rows.length > 0 &&
                             table.getRowModel().rows.map((row) => (
                                 <TableRow
                                     data-state={
@@ -168,17 +197,7 @@ const UserTable = <TData, TValue>({
                                         </TableCell>
                                     ))}
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    className="h-24 text-center"
-                                    colSpan={columns.length}
-                                >
-                                    No results.
-                                </TableCell>
-                            </TableRow>
-                        )}
+                            ))}
                     </TableBody>
                 </Table>
             </div>
