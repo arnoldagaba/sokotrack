@@ -1,10 +1,17 @@
-import { useNavigate, useRouteContext } from "@tanstack/react-router";
+import {
+    useNavigate,
+    useRouteContext,
+    useRouter,
+} from "@tanstack/react-router";
 import {
     ChevronsUpDownIcon,
     LogOutIcon,
     SettingsIcon,
+    Undo2Icon,
     UserCircleIcon,
 } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import {
     Avatar,
     AvatarFallback,
@@ -27,10 +34,16 @@ import {
 } from "#/components/ui/sidebar.tsx";
 import { authClient } from "#/lib/auth-client.ts";
 
+const WHITESPACE_PATTERN = /\s+/;
+
 const NavUser = () => {
-    const { user } = useRouteContext({ from: "/_app" });
+    const { session, user } = useRouteContext({ from: "/_app" });
     const { isMobile } = useSidebar();
     const navigate = useNavigate();
+    const router = useRouter();
+    const [isStoppingImpersonation, setIsStoppingImpersonation] =
+        useState(false);
+    const isImpersonating = session.session.impersonatedBy != null;
 
     const handleLogout = async (): Promise<void> => {
         try {
@@ -46,10 +59,32 @@ const NavUser = () => {
         }
     };
 
+    const handleStopImpersonation = async (): Promise<void> => {
+        if (!isImpersonating || isStoppingImpersonation) {
+            return;
+        }
+
+        setIsStoppingImpersonation(true);
+
+        try {
+            await authClient.admin.stopImpersonating();
+            await router.invalidate({ sync: true });
+            toast.success("Returned to your admin session");
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to stop impersonation";
+            toast.error(message);
+        } finally {
+            setIsStoppingImpersonation(false);
+        }
+    };
+
     const initials =
         (user.name ?? "")
             .trim()
-            .split(/\s+/)
+            .split(WHITESPACE_PATTERN)
             .filter(Boolean)
             .map((part) => part[0]?.toUpperCase() ?? "")
             .slice(0, 2)
@@ -136,6 +171,22 @@ const NavUser = () => {
                                     <SettingsIcon /> Settings
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
+
+                            {isImpersonating ? (
+                                <>
+                                    <DropdownMenuSeparator />
+
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            disabled={isStoppingImpersonation}
+                                            onClick={handleStopImpersonation}
+                                        >
+                                            <Undo2Icon />
+                                            Stop impersonation
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </>
+                            ) : null}
 
                             <DropdownMenuSeparator />
 
