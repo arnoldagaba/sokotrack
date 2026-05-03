@@ -1,5 +1,9 @@
 import { revalidateLogic } from "@tanstack/react-form";
-import { createFileRoute, useRouteContext, useRouter } from "@tanstack/react-router";
+import {
+    createFileRoute,
+    useRouteContext,
+    useRouter,
+} from "@tanstack/react-router";
 import {
     BadgeCheckIcon,
     MailIcon,
@@ -32,17 +36,17 @@ import {
 } from "#/components/ui/field.tsx";
 import { Input } from "#/components/ui/input.tsx";
 import { Spinner } from "#/components/ui/spinner.tsx";
-import { updateCurrentUserProfile } from "#/features/auth/functions/index.ts";
-import {
-    type UpdateProfileInput,
-    updateProfileSchema,
-} from "#/features/auth/schema/index.ts";
 import {
     formatAdminDate,
     formatAdminDateOnly,
     getAdminRoleLabel,
     getUserInitials,
 } from "#/features/admin/utils.ts";
+import { updateCurrentUserProfile } from "#/features/auth/functions/index.ts";
+import {
+    type UpdateProfileInput,
+    updateProfileSchema,
+} from "#/features/auth/schema/index.ts";
 import { useAppForm } from "#/hooks/form.ts";
 import { cn } from "#/lib/utils.ts";
 
@@ -65,15 +69,15 @@ const ReadOnlyField = ({
     description?: string;
     label: string;
     value: string;
-}) => {
-    return (
-        <Field>
-            <FieldLabel>{label}</FieldLabel>
-            <Input readOnly value={value} />
-            {description ? <FieldDescription>{description}</FieldDescription> : null}
-        </Field>
-    );
-};
+}) => (
+    <Field>
+        <FieldLabel>{label}</FieldLabel>
+        <Input readOnly value={value} />
+        {description ? (
+            <FieldDescription>{description}</FieldDescription>
+        ) : null}
+    </Field>
+);
 
 function RouteComponent() {
     const { session, user } = useRouteContext({ from: "/_app" });
@@ -90,7 +94,6 @@ function RouteComponent() {
                     data: value,
                 });
                 await router.invalidate({ sync: true });
-                form.reset({ name: value.name });
                 toast.success("Profile updated successfully");
             } catch (error) {
                 const message =
@@ -114,9 +117,13 @@ function RouteComponent() {
         form.reset({ name: user.name ?? "" });
     }, [form, user.name]);
 
-    const roleTone =
-        rolePillClasses[user.role as keyof typeof rolePillClasses] ??
-        rolePillClasses.staff;
+    const isValidRoleKey = (
+        role: string
+    ): role is keyof typeof rolePillClasses => role in rolePillClasses;
+
+    const roleTone = isValidRoleKey(user.role)
+        ? rolePillClasses[user.role]
+        : rolePillClasses.staff;
 
     return (
         <div className="space-y-6 pb-8">
@@ -135,7 +142,10 @@ function RouteComponent() {
                                             src={user.image ?? undefined}
                                         />
                                         <AvatarFallback className="rounded-3xl text-xl">
-                                            {getUserInitials(user.name, user.email)}
+                                            {getUserInitials(
+                                                user.name,
+                                                user.email
+                                            )}
                                         </AvatarFallback>
                                     </Avatar>
 
@@ -165,8 +175,8 @@ function RouteComponent() {
                                                 Profile
                                             </h1>
                                             <p className="max-w-2xl text-muted-foreground text-sm/6">
-                                                Keep your public-facing identity up
-                                                to date without leaving the
+                                                Keep your public-facing identity
+                                                up to date without leaving the
                                                 workspace.
                                             </p>
                                         </div>
@@ -299,7 +309,11 @@ function RouteComponent() {
                                             }
                                             type="submit"
                                         >
-                                            {isSubmitting ? <Spinner /> : <UserRoundIcon />}
+                                            {isSubmitting ? (
+                                                <Spinner />
+                                            ) : (
+                                                <UserRoundIcon />
+                                            )}
                                             {isSubmitting
                                                 ? "Saving profile..."
                                                 : "Save profile"}
