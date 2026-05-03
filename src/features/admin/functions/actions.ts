@@ -1,6 +1,7 @@
 import toast from "react-hot-toast";
 import type { User } from "#/lib/auth.ts";
 import { authClient } from "#/lib/auth-client.ts";
+import type { Role } from "#/lib/permissions.ts";
 import type { getRouter } from "#/router.tsx";
 
 const handleUserSessionsRevoke = async (
@@ -9,7 +10,7 @@ const handleUserSessionsRevoke = async (
 ) => {
     try {
         await authClient.admin.revokeUserSessions({ userId });
-        toast.success("Sessions revoked for user");
+        toast.success("Sessions revoked successfully");
     } catch (error) {
         const message =
             error instanceof Error
@@ -84,6 +85,64 @@ const handleUserBan = async (
     }
 };
 
+const handleUserRoleChange = async (
+    userId: string,
+    role: Role,
+    user: User,
+    router: ReturnType<typeof getRouter>
+) => {
+    if (user.id === userId) {
+        toast.error("You cannot change your own role.");
+        return false;
+    }
+
+    try {
+        await authClient.admin.setRole({ userId, role });
+        toast.success(`Role updated to ${role}`);
+        await router.invalidate({ sync: true });
+        return true;
+    } catch (error) {
+        const message =
+            error instanceof Error ? error.message : "Failed to update role";
+        toast.error(message);
+        console.error("[Admin] Failed to update user role:", error);
+        return false;
+    }
+};
+
+const handleUserBanStatusChange = async (
+    userId: string,
+    banned: boolean,
+    user: User,
+    router: ReturnType<typeof getRouter>
+) => {
+    if (user.id === userId) {
+        toast.error("You cannot change your own access status.");
+        return false;
+    }
+
+    try {
+        if (banned) {
+            await authClient.admin.banUser({ userId });
+            toast.success("User banned successfully");
+        } else {
+            await authClient.admin.unbanUser({ userId });
+            toast.success("User unbanned successfully");
+        }
+
+        await router.invalidate({ sync: true });
+        return true;
+    } catch (error) {
+        const message =
+            error instanceof Error
+                ? error.message
+                : "Failed to update access status";
+        toast.error(message);
+        console.error("[Admin] Failed to update user access status:", error);
+        return false;
+    }
+};
+
 const handleBulkUserBan = async (
     userIds: string[],
     user: User,
@@ -127,7 +186,7 @@ const handleBulkUserUnban = async (
 
     try {
         const promises = filteredIds.map((id) =>
-            authClient.admin.banUser({ userId: id })
+            authClient.admin.unbanUser({ userId: id })
         );
         await Promise.all(promises);
         toast.success(`Unbanned ${filteredIds.length} user(s)`);
@@ -196,7 +255,9 @@ export {
     handleBulkUserSessionsRevoke,
     handleBulkUserUnban,
     handleUserBan,
+    handleUserBanStatusChange,
     handleUserImpersonation,
     handleUserRemoval,
+    handleUserRoleChange,
     handleUserSessionsRevoke,
 };
