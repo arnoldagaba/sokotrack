@@ -13,49 +13,55 @@ const NavContent = () => {
     const pathname = useRouterState({
         select: (state) => state.location.pathname,
     });
-
-    if (user.role !== "admin") {
-        return null;
-    }
+    const isAdmin = user.role === "admin";
 
     return (
-        <SidebarGroup>
-            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+        <>
+            {isAdmin ? (
+                <SidebarGroup>
+                    <SidebarGroupLabel>Administration</SidebarGroupLabel>
 
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        isActive={
-                            pathname === "/admin" || pathname === "/admin/"
-                        }
-                        render={<Link to="/admin" />}
-                    >
-                        <ShieldIcon />
-                        <span>Admin Dashboard</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                isActive={
+                                    pathname === "/admin" ||
+                                    pathname === "/admin/"
+                                }
+                                render={<Link to="/admin" />}
+                            >
+                                <ShieldIcon />
+                                <span>Admin Dashboard</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
 
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        isActive={pathname.startsWith("/admin/users")}
-                        render={<Link to="/admin/users" />}
-                    >
-                        <UsersIcon />
-                        <span>Users</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                isActive={pathname.startsWith("/admin/users")}
+                                render={<Link to="/admin/users" />}
+                            >
+                                <UsersIcon />
+                                <span>Users</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroup>
+            ) : null}
 
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                        isActive={pathname === "/dashboard"}
-                        render={<Link to="/dashboard" />}
-                    >
-                        <LayoutDashboardIcon />
-                        <span>Workspace</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
+            <SidebarGroup>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            isActive={pathname === "/dashboard"}
+                            render={<Link to="/dashboard" />}
+                        >
+                            <LayoutDashboardIcon />
+                            <span>Workspace</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarGroup>
+        </>
     );
 };
 
