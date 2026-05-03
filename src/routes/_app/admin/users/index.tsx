@@ -1,7 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
+import {
+    createFileRoute,
+    useRouteContext,
+    useRouter,
+} from "@tanstack/react-router";
 import { z } from "zod";
 import { columns } from "#/features/admin/components/columns.tsx";
 import UserTable from "#/features/admin/components/user-table.tsx";
+import {
+    handleBulkUserBan,
+    handleBulkUserRemoval,
+    handleBulkUserSessionsRevoke,
+    handleBulkUserUnban,
+} from "#/features/admin/functions/actions.ts";
 import { listUsers } from "#/features/admin/functions/index.ts";
 
 const searchSchema = z.object({
@@ -33,10 +43,36 @@ export const Route = createFileRoute("/_app/admin/users/")({
 
 function RouteComponent() {
     const { users, total } = Route.useLoaderData();
+    const router = useRouter();
+    const { user: currentUser } = useRouteContext({ from: "/_app" });
+
+    const handleBulkBan = (userIds: string[]) => {
+        handleBulkUserBan(userIds, currentUser, router);
+    };
+
+    const handleBulkUnban = (userIds: string[]) => {
+        handleBulkUserUnban(userIds, currentUser, router);
+    };
+
+    const handleBulkDelete = (userIds: string[]) => {
+        handleBulkUserRemoval(userIds, currentUser, router);
+    };
+
+    const handleBulkRevokeSessions = (userIds: string[]) => {
+        handleBulkUserSessionsRevoke(userIds, router);
+    };
 
     return (
         <div>
-            <UserTable columns={columns} data={users} total={total} />
+            <UserTable
+                columns={columns}
+                data={users}
+                onBulkBan={handleBulkBan}
+                onBulkDelete={handleBulkDelete}
+                onBulkRevokeSessions={handleBulkRevokeSessions}
+                onBulkUnban={handleBulkUnban}
+                total={total}
+            />
         </div>
     );
 }
