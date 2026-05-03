@@ -129,6 +129,12 @@ export const columns: ColumnDef<UserWithRole>[] = [
         ),
     },
     {
+        accessorKey: "emailVerified",
+        header: ({ column }) => (
+            <TableColumnHeader column={column} title="Email Verified" />
+        ),
+    },
+    {
         accessorKey: "role",
         header: ({ column }) => (
             <TableColumnHeader column={column} title="User Role" />
