@@ -2,19 +2,22 @@ import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { auth } from "#/lib/auth.ts";
-import {
-    changePasswordSchema,
-    updateProfileSchema,
-} from "../schema/index.ts";
+import { changePasswordSchema, updateProfileSchema } from "../schema/index.ts";
 
-const getAuthContext = async () => {
+const getAuthContext = async (): Promise<{
+    headers: Headers;
+    session: Awaited<ReturnType<typeof auth.api.getSession>>;
+}> => {
     const headers = getRequestHeaders();
     const session = await auth.api.getSession({ headers });
 
     return { headers, session };
 };
 
-const requireAuthContext = async () => {
+const requireAuthContext = async (): Promise<{
+    headers: Headers;
+    session: NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
+}> => {
     const { headers, session } = await getAuthContext();
 
     if (!session) {
@@ -76,31 +79,31 @@ export const changeCurrentUserPassword = createServerFn({ method: "POST" })
         return { status: true };
     });
 
-export const listCurrentUserSessions = createServerFn({ method: "GET" }).handler(
-    async () => {
-        const { headers, session } = await requireAuthContext();
-        const currentToken = session.session.token;
-        const sessions = await auth.api.listSessions({
-            headers,
-        });
+export const listCurrentUserSessions = createServerFn({
+    method: "GET",
+}).handler(async () => {
+    const { headers, session } = await requireAuthContext();
+    const currentToken = session.session.token;
+    const sessions = await auth.api.listSessions({
+        headers,
+    });
 
-        const sortedSessions = [...sessions].sort(
-            (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-        );
+    const sortedSessions = [...sessions].sort(
+        (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
 
-        return {
-            sessions: sortedSessions.map((accountSession) => ({
-                createdAt: accountSession.createdAt,
-                expiresAt: accountSession.expiresAt,
-                id: accountSession.id,
-                ipAddress: accountSession.ipAddress ?? null,
-                isCurrent: accountSession.token === currentToken,
-                updatedAt: accountSession.updatedAt,
-                userAgent: accountSession.userAgent ?? null,
-            })),
-        };
-    }
-);
+    return {
+        sessions: sortedSessions.map((accountSession) => ({
+            createdAt: accountSession.createdAt,
+            expiresAt: accountSession.expiresAt,
+            id: accountSession.id,
+            ipAddress: accountSession.ipAddress ?? null,
+            isCurrent: accountSession.token === currentToken,
+            updatedAt: accountSession.updatedAt,
+            userAgent: accountSession.userAgent ?? null,
+        })),
+    };
+});
 
 export const revokeOtherCurrentUserSessions = createServerFn({
     method: "POST",
