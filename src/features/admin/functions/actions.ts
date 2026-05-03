@@ -29,18 +29,21 @@ const handleUserRemoval = async (
     router: ReturnType<typeof getRouter>
 ) => {
     if (user.id === userId) {
-        return toast.error("You cannot remove yourself.");
+        toast.error("You cannot remove yourself.");
+        return false;
     }
 
     try {
         await authClient.admin.removeUser({ userId });
         toast.success("User removed successfully");
         await router.invalidate({ sync: true });
+        return true;
     } catch (error) {
         const message =
             error instanceof Error ? error.message : "Failed to remove user";
         toast.error(message);
         console.error("[Admin] Failed to remove user:", error);
+        return false;
     }
 };
 
@@ -171,7 +174,9 @@ const handleBulkUserBan = async (
         if (failureCount === 0) {
             toast.success(`Banned ${successCount} user(s)`);
         } else {
-            toast.error(`Banned ${successCount} user(s); ${failureCount} failed`);
+            toast.error(
+                `Banned ${successCount} user(s); ${failureCount} failed`
+            );
         }
     } catch (error) {
         const message =
