@@ -72,6 +72,7 @@ import {
     getAdminRoleLabel,
     getUserInitials,
     normalizeAdminRole,
+    parseAdminRole,
 } from "#/features/admin/utils.ts";
 import type { Role } from "#/lib/permissions.ts";
 import { cn } from "#/lib/utils.ts";
@@ -493,9 +494,12 @@ function RouteComponent() {
                                     Assigned role
                                 </FieldLabel>
                                 <Select
-                                    onValueChange={(value) =>
-                                        setSelectedRole(value as Role)
-                                    }
+                                    onValueChange={(value) => {
+                                        const nextRole = parseAdminRole(value);
+                                        if (nextRole) {
+                                            setSelectedRole(nextRole);
+                                        }
+                                    }}
                                     value={selectedRole}
                                 >
                                     <SelectTrigger
