@@ -17,7 +17,6 @@ import {
 import { useEffect, useState } from "react";
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -47,6 +46,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "#/components/ui/select.tsx";
+import { Spinner } from "#/components/ui/spinner.tsx";
 import {
     Table,
     TableBody,
@@ -108,6 +108,91 @@ const formatSessionAgent = (userAgent: string | null) => {
     return userAgent.length > 80 ? `${userAgent.slice(0, 77)}...` : userAgent;
 };
 
+interface UserActionDialogProps {
+    isOpen: boolean;
+    isPending: boolean;
+    onCancel: () => void;
+    onConfirm: () => void;
+    userLabel: string;
+}
+
+const BanUserDialog = ({
+    isOpen,
+    isPending,
+    onCancel,
+    onConfirm,
+    userLabel,
+}: UserActionDialogProps) => (
+    <AlertDialog
+        onOpenChange={(open) => {
+            if (!(open || isPending)) {
+                onCancel();
+            }
+        }}
+        open={isOpen}
+    >
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Ban this user?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This blocks {userLabel} from signing in until an admin
+                    restores access.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isPending}>
+                    Cancel
+                </AlertDialogCancel>
+                <Button disabled={isPending} onClick={onConfirm}>
+                    {isPending ? <Spinner /> : <BanIcon />}
+                    {isPending ? "Banning..." : "Ban user"}
+                </Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+);
+
+const DeleteUserDialog = ({
+    isOpen,
+    isPending,
+    onCancel,
+    onConfirm,
+    userLabel,
+}: UserActionDialogProps) => (
+    <AlertDialog
+        onOpenChange={(open) => {
+            if (!(open || isPending)) {
+                onCancel();
+            }
+        }}
+        open={isOpen}
+    >
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Remove this user?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This permanently removes {userLabel}. Existing sessions will
+                    stop working and the account will disappear from the
+                    directory.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel disabled={isPending}>
+                    Cancel
+                </AlertDialogCancel>
+                <Button
+                    disabled={isPending}
+                    onClick={onConfirm}
+                    variant="destructive"
+                >
+                    {isPending ? <Spinner /> : <AlertTriangleIcon />}
+                    {isPending ? "Removing..." : "Remove user"}
+                </Button>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+);
+
 function RouteComponent() {
     const { user, sessions } = Route.useLoaderData();
     const router = useRouter();
@@ -116,6 +201,8 @@ function RouteComponent() {
         normalizeAdminRole(user.role)
     );
     const [isRoleSubmitting, setIsRoleSubmitting] = useState(false);
+    const [isBanning, setIsBanning] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [openDialog, setOpenDialog] = useState<"ban" | "delete" | null>(null);
 
     useEffect(() => {
@@ -124,6 +211,7 @@ function RouteComponent() {
 
     const isCurrentUser = currentUser.id === user.id;
     const accessState = user.banned === true ? "banned" : "active";
+    const userLabel = user.name || user.email;
 
     const applyRoleUpdate = async () => {
         if (selectedRole === normalizeAdminRole(user.role)) {
@@ -140,21 +228,43 @@ function RouteComponent() {
     };
 
     const toggleBanState = async (nextBanned: boolean) => {
-        const didUpdate = await handleUserBanStatusChange(
-            user.id,
-            nextBanned,
-            currentUser,
-            router
-        );
-        if (didUpdate) {
-            setOpenDialog(null);
+        if (isBanning) {
+            return;
+        }
+
+        setIsBanning(true);
+        try {
+            const didUpdate = await handleUserBanStatusChange(
+                user.id,
+                nextBanned,
+                currentUser,
+                router
+            );
+            if (didUpdate) {
+                setOpenDialog(null);
+            }
+        } finally {
+            setIsBanning(false);
         }
     };
 
     const removeUser = async () => {
-        const didRemove = await handleUserRemoval(user.id, currentUser, router);
-        if (didRemove) {
-            setOpenDialog(null);
+        if (isDeleting) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const didRemove = await handleUserRemoval(
+                user.id,
+                currentUser,
+                router
+            );
+            if (didRemove) {
+                setOpenDialog(null);
+            }
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -509,50 +619,21 @@ function RouteComponent() {
                 </div>
             </section>
 
-            <AlertDialog
-                onOpenChange={(open) => !open && setOpenDialog(null)}
-                open={openDialog === "ban"}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Ban this user?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This blocks {user.name || user.email} from signing
-                            in until an admin restores access.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => toggleBanState(true)}>
-                            <BanIcon />
-                            Ban user
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <BanUserDialog
+                isOpen={openDialog === "ban"}
+                isPending={isBanning}
+                onCancel={() => setOpenDialog(null)}
+                onConfirm={() => toggleBanState(true)}
+                userLabel={userLabel}
+            />
 
-            <AlertDialog
-                onOpenChange={(open) => !open && setOpenDialog(null)}
-                open={openDialog === "delete"}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Remove this user?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This permanently removes {user.name || user.email}.
-                            Existing sessions will stop working and the account
-                            will disappear from the directory.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={removeUser}>
-                            <AlertTriangleIcon />
-                            Remove user
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <DeleteUserDialog
+                isOpen={openDialog === "delete"}
+                isPending={isDeleting}
+                onCancel={() => setOpenDialog(null)}
+                onConfirm={removeUser}
+                userLabel={userLabel}
+            />
         </div>
     );
 }
